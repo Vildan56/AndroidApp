@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_accent">#26A69A</color>
+    <color name="secondary_accent">#80CBC4</color>
+    <color name="gradient_start">#B3E5FC</color>
+    <color name="gradient_end">#4FC3F7</color>
+    <color name="background_card">#F9FAFB</color>
+    <color name="background_screen">#ECEFF1</color>
+    <color name="text_primary">#37474F</color>
+    <color name="background_profile_start">#E0F7FA</color>
+    <color name="background_profile_end">#B2EBF2</color>
+
+    <color name="purple_500">#26A69A</color> <!-- Map to primary_accent -->
+    <color name="purple_700">#26A69A</color> <!-- Map to primary_accent -->
+    <color name="purple_200">#80CBC4</color> <!-- Map to secondary_accent -->
+    <color name="teal_200">#80CBC4</color>  <!-- Map to secondary_accent -->
+    <color name="teal_700">#26A69A</color>  <!-- Map to primary_accent -->
+    <color name="white">#F9FAFB</color>      <!-- Map to background_card -->
+    <color name="black">#37474F</color>     <!-- Map to text_primary -->
+</resources>

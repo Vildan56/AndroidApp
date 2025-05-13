@@ -1,0 +1,22 @@
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/primary_accent</item>
+        <item name="colorPrimaryDark">@color/primary_accent</item>
+        <item name="colorAccent">@color/secondary_accent</item>
+    </style>
+
+    <style name="EditTextStyle">
+        <item name="android:background">@drawable/edit_text_background</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="ButtonStyle">
+        <item name="android:background">@drawable/button_gradient</item>
+        <item name="android:textColor">@color/background_card</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:layout_margin">8dp</item>
+    </style>
+</resources>
