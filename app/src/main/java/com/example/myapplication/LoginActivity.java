@@ -49,6 +49,21 @@ public class LoginActivity extends AppCompatActivity {
                     });
         });
 
-        tvSignUp.setOnClickListener(v -> startActivity(new Intent(this, SignUpActivity.class)));
+        TextView tvForgotPassword = findViewById(R.id.tv_forgot_password);
+        tvForgotPassword.setOnClickListener(v -> {
+            String email = etEmail.getText().toString().trim();
+            if (email.isEmpty()) {
+                Toast.makeText(this, "Введите email", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            mAuth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(this, "Инструкция отправлена на почту", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Ошибка восстановления пароля", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        });
     }
 }
