@@ -1,8 +1,10 @@
 package com.example.myapplication;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -24,10 +26,12 @@ import java.util.Map;
 import java.util.Objects;
 
 public class CartActivity extends AppCompatActivity {
+    private static final String TAG = "CartActivity";
     private TextView tvTotal;
     private List<CartItem> cartItems;
-    private CartAdapter adapter;
+    private CartAdapter cartAdapter;
     private DatabaseReference cartRef;
+    private DatabaseReference ordersRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,12 +43,13 @@ public class CartActivity extends AppCompatActivity {
         Button btnCheckout = findViewById(R.id.btn_checkout);
 
         cartItems = new ArrayList<>();
-        adapter = new CartAdapter(this, cartItems);
+        cartAdapter = new CartAdapter(this, cartItems);
         rvCart.setLayoutManager(new LinearLayoutManager(this));
-        rvCart.setAdapter(adapter);
+        rvCart.setAdapter(cartAdapter);
 
         String userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         cartRef = FirebaseDatabase.getInstance().getReference("carts").child(userId);
+        ordersRef = FirebaseDatabase.getInstance().getReference("users").child(userId).child("orders");
 
         loadCartItems();
 
@@ -61,18 +66,33 @@ public class CartActivity extends AppCompatActivity {
             builder.setTitle("Подтвердить заказ");
             builder.setMessage("Ваш заказ успешно оформлен!");
             builder.setPositiveButton("OK", (dialog, which) -> {
-                // Очищаем корзину в базе данных
-                cartRef.removeValue()
+                // Сохраняем заказ в Firebase
+                String orderId = ordersRef.push().getKey();
+                Map<String, Object> orderData = new HashMap<>();
+                orderData.put("timestamp", System.currentTimeMillis());
+                orderData.put("items", cartItems);
+
+                ordersRef.child(orderId).setValue(orderData)
                         .addOnSuccessListener(aVoid -> {
-                            // Корзина очищена, UI обновится автоматически через ValueEventListener
+                            // Очищаем корзину в базе данных после успешного сохранения заказа
+                            cartRef.removeValue()
+                                    .addOnSuccessListener(aVoid2 -> {
+                                        Toast.makeText(this, "Order placed successfully", Toast.LENGTH_SHORT).show();
+                                        cartItems.clear();
+                                        cartAdapter.notifyDataSetChanged();
+                                        finish();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        AlertDialog.Builder errorBuilder = new AlertDialog.Builder(CartActivity.this);
+                                        errorBuilder.setTitle("Ошибка");
+                                        errorBuilder.setMessage("Не удалось очистить корзину: " + e.getMessage());
+                                        errorBuilder.setPositiveButton("OK", null);
+                                        errorBuilder.show();
+                                    });
                         })
                         .addOnFailureListener(e -> {
-                            // Обработка ошибки очистки корзины
-                            AlertDialog.Builder errorBuilder = new AlertDialog.Builder(CartActivity.this);
-                            errorBuilder.setTitle("Ошибка");
-                            errorBuilder.setMessage("Не удалось очистить корзину: " + e.getMessage());
-                            errorBuilder.setPositiveButton("OK", null);
-                            errorBuilder.show();
+                            Log.e(TAG, "Failed to save order: " + e.getMessage(), e);
+                            Toast.makeText(this, "Failed to place order: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         });
             });
             builder.setNegativeButton("Отмена", null);
@@ -94,13 +114,14 @@ public class CartActivity extends AppCompatActivity {
                         total += item.getPrice() * item.getQuantity();
                     }
                 }
-                adapter.notifyDataSetChanged();
+                cartAdapter.notifyDataSetChanged();
                 tvTotal.setText(String.format("Total: $%.2f", total));
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                // Обработка ошибок
+                Log.e(TAG, "Failed to load cart items: " + databaseError.getMessage(), databaseError.toException());
+                Toast.makeText(CartActivity.this, "Error loading cart: " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
