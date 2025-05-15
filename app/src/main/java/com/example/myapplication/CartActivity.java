@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -55,7 +56,27 @@ public class CartActivity extends AppCompatActivity {
         }
 
         btnCheckout.setOnClickListener(v -> {
-            // Логика оформления заказа
+            // Показываем всплывающее окно для подтверждения заказа
+            AlertDialog.Builder builder = new AlertDialog.Builder(CartActivity.this);
+            builder.setTitle("Подтвердить заказ");
+            builder.setMessage("Ваш заказ успешно оформлен!");
+            builder.setPositiveButton("OK", (dialog, which) -> {
+                // Очищаем корзину в базе данных
+                cartRef.removeValue()
+                        .addOnSuccessListener(aVoid -> {
+                            // Корзина очищена, UI обновится автоматически через ValueEventListener
+                        })
+                        .addOnFailureListener(e -> {
+                            // Обработка ошибки очистки корзины
+                            AlertDialog.Builder errorBuilder = new AlertDialog.Builder(CartActivity.this);
+                            errorBuilder.setTitle("Ошибка");
+                            errorBuilder.setMessage("Не удалось очистить корзину: " + e.getMessage());
+                            errorBuilder.setPositiveButton("OK", null);
+                            errorBuilder.show();
+                        });
+            });
+            builder.setNegativeButton("Отмена", null);
+            builder.show();
         });
     }
 

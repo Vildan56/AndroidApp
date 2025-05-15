@@ -2,8 +2,6 @@ package com.example.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -31,6 +29,7 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
     private ProductAdapter adapter;
     private Spinner spinnerCategory;
     private DatabaseReference productsRef;
+    private SearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +39,7 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
         rvProducts = findViewById(R.id.rv_products);
         FloatingActionButton fabCart = findViewById(R.id.fab_cart);
         spinnerCategory = findViewById(R.id.spinner_category);
+        searchView = findViewById(R.id.search_view);
 
         cartItems = new ArrayList<>();
         productList = new ArrayList<>();
@@ -58,6 +58,7 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
         loadProducts();
 
         setupCategorySpinner();
+        setupSearchView();
     }
 
     private void loadProducts() {
@@ -101,6 +102,22 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
         });
     }
 
+    private void setupSearchView() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                adapter.getFilter().filter(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                return true;
+            }
+        });
+    }
+
     private void filterProductsByCategory(String category) {
         List<Product> filteredList = new ArrayList<>();
         if (category.equals("All")) {
@@ -118,26 +135,6 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
     @Override
     public void onAddToCartClick(Product product) {
         cartItems.add(product);
-        // Сохранение в Realtime Database будет в CartActivity
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_product_list, menu);
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
-                return true;
-            }
-        });
-        return true;
-    }
 }
