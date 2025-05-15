@@ -3,76 +3,85 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/background_card"
     android:layout_margin="8dp"
+    android:background="@color/background_profile_start"
     android:elevation="4dp"
+    android:orientation="vertical"
     android:padding="8dp">
-
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
     <ImageView
         android:id="@+id/iv_cart_item"
         android:layout_width="80dp"
         android:layout_height="80dp"
+        android:layout_alignParentLeft="true"
         android:scaleType="centerCrop"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tv_cart_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginStart="8dp"
         android:text="Product Name"
         android:textColor="@color/text_primary"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/iv_cart_item"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="8dp" />
-
-    <TextView
-        android:id="@+id/tv_cart_price"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="$0.00"
-        android:textColor="@color/text_primary"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/tv_cart_name"
         app:layout_constraintStart_toEndOf="@id/iv_cart_item"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp" />
-
-    <Button
-        android:id="@+id/btn_decrease"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:backgroundTint="@color/secondary_accent"
-        android:text="-"
-        app:layout_constraintTop_toBottomOf="@id/tv_cart_price"
-        app:layout_constraintStart_toEndOf="@id/iv_cart_item"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp" />
-
-    <TextView
-        android:id="@+id/tv_quantity"
+        app:layout_constraintTop_toTopOf="parent" />
+</LinearLayout>
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="1"
-        android:textColor="@color/text_primary"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/tv_cart_price"
-        app:layout_constraintStart_toEndOf="@id/btn_decrease"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp" />
+        android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/btn_increase"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:backgroundTint="@color/secondary_accent"
-        android:text="+"
-        app:layout_constraintTop_toBottomOf="@id/tv_cart_price"
-        app:layout_constraintStart_toEndOf="@id/tv_quantity"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp" />
+        <TextView
+            android:id="@+id/tv_cart_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:text="$0.00"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            app:layout_constraintStart_toEndOf="@id/iv_cart_item"
+            app:layout_constraintTop_toBottomOf="@id/tv_cart_name" />
 
+        <Button
+            android:id="@+id/btn_decrease"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/secondary_accent"
+            android:text="-"
+            app:layout_constraintStart_toEndOf="@id/iv_cart_item"
+            app:layout_constraintTop_toBottomOf="@id/tv_cart_price" />
+
+        <TextView
+            android:id="@+id/tv_quantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="1"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            app:layout_constraintStart_toEndOf="@id/btn_decrease"
+            app:layout_constraintTop_toBottomOf="@id/tv_cart_price" />
+
+        <Button
+            android:id="@+id/btn_increase"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/secondary_accent"
+            android:text="+"
+            app:layout_constraintStart_toEndOf="@id/tv_quantity"
+            app:layout_constraintTop_toBottomOf="@id/tv_cart_price" />
+    </LinearLayout>
 </LinearLayout>

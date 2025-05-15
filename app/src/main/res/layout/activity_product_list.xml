@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".ProductListActivity"
     android:orientation="vertical"
-    android:background="@color/background_screen">
+    android:background="@color/background_profile_end">
 
     <TextView
         android:id="@+id/tv_header"
@@ -20,7 +20,8 @@
         android:padding="16dp"
         android:textColor="@color/text_primary" />
 
-    <SearchView
+    <androidx.appcompat.widget.SearchView
+        android:background="@color/primary_accent"
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,6 +29,7 @@
         android:queryHint="Search products" />
 
     <Spinner
+        android:background="@color/primary_accent"
         android:id="@+id/spinner_category"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,6 +41,10 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="8dp" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_cart"
@@ -46,7 +52,18 @@
         android:layout_height="wrap_content"
         android:src="@android:drawable/ic_menu_view"
         app:backgroundTint="@color/primary_accent"
-        android:layout_gravity="end"
+
         android:layout_margin="16dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_manage"
+            app:backgroundTint="@color/primary_accent"
+            android:layout_margin="16dp"
+            android:layout_alignParentEnd="true"/>
+   </RelativeLayout>
+
 
 </LinearLayout>

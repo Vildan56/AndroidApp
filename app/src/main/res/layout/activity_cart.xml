@@ -34,11 +34,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Total: $0.00"
+        android:textColor="@color/text_primary"
         android:textSize="18sp" />
 
     <Button
         android:id="@+id/btn_checkout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Checkout" />
+        android:text="Checkout"
+        style="@style/EditTextStyle"/>
 </LinearLayout>

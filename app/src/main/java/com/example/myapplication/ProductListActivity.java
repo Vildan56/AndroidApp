@@ -9,9 +9,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -51,10 +48,11 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
 
         rvProducts = findViewById(R.id.rv_products);
         FloatingActionButton fabCart = findViewById(R.id.fab_cart);
+        FloatingActionButton fabProfile = findViewById(R.id.fab_profile);
         spinnerCategory = findViewById(R.id.spinner_category);
         searchView = findViewById(R.id.search_view);
 
-        if (rvProducts == null || fabCart == null || spinnerCategory == null || searchView == null) {
+        if (rvProducts == null || fabCart == null || fabProfile == null || spinnerCategory == null || searchView == null) {
             Log.e(TAG, "One or more views not found in layout");
             Toast.makeText(this, "Layout error: View not found", Toast.LENGTH_LONG).show();
             finish();
@@ -78,6 +76,11 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
         fabCart.setOnClickListener(v -> {
             Intent intent = new Intent(this, CartActivity.class);
             intent.putParcelableArrayListExtra("cartItems", new ArrayList<>(cartItems));
+            startActivity(intent);
+        });
+
+        fabProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ProfileActivity.class);
             startActivity(intent);
         });
 
