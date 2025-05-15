@@ -2,13 +2,12 @@ package com.example.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,49 +22,79 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
-
-    private TextView tvName, tvEmail, tvPhone;
-    private FirebaseAuth mAuth;
+    private static final String TAG = "ProfileActivity";
+    private RecyclerView rvOrders;
+    private OrderAdapter orderAdapter;
+    private List<Order> orderList;
+    private DatabaseReference ordersRef;
     private DatabaseReference userRef;
-    private String userId;
+    private Button btnLogout;
+    private TextView tvName;
+    private TextView tvEmail;
+    private TextView tvPhone;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        tvName = findViewById(R.id.tv_name);
-        tvEmail = findViewById(R.id.tv_email);
-        tvPhone = findViewById(R.id.tv_phone);
-        Button btnLogout = findViewById(R.id.btn_logout);
-        RecyclerView rvOrders = findViewById(R.id.rv_orders);
-
         mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-            tvEmail.setText(user.getEmail());
-            tvName.setText(user.getDisplayName() != null ? user.getDisplayName() : "User");
-            userId = user.getUid();
-        } else {
-            startActivity(new Intent(this, LoginActivity.class));
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
+        String userId = currentUser.getUid();
+        Log.d(TAG, "Current user ID: " + userId);
+        ordersRef = FirebaseDatabase.getInstance().getReference("users").child(userId).child("orders");
+        userRef = FirebaseDatabase.getInstance().getReference("users").child(userId);
+
+        // Инициализация UI элементов
+        rvOrders = findViewById(R.id.rv_orders);
+        btnLogout = findViewById(R.id.btn_logout);
+        tvName = findViewById(R.id.tv_name);
+        tvEmail = findViewById(R.id.tv_email);
+        tvPhone = findViewById(R.id.tv_phone);
+
+        if (rvOrders == null) {
+            Log.e(TAG, "RecyclerView rv_orders not found in layout");
+            Toast.makeText(this, "Error: Orders view not found", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+        if (tvName == null || tvPhone == null) {
+            Log.e(TAG, "TextView tv_name or tv_phone not found in layout");
+            Toast.makeText(this, "Error: Profile views not found", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+        orderList = new ArrayList<>();
+        orderAdapter = new OrderAdapter(this, orderList);
         rvOrders.setLayoutManager(new LinearLayoutManager(this));
+        rvOrders.setAdapter(orderAdapter);
+
+        loadOrders();
+        loadUserData();
 
         btnLogout.setOnClickListener(v -> {
             mAuth.signOut();
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         });
-
-        userRef = FirebaseDatabase.getInstance().getReference("users").child(userId);
-        loadUserData();
 
         Button btnEditProfile = findViewById(R.id.btn_edit_profile);
         btnEditProfile.setOnClickListener(v -> {
@@ -102,26 +131,97 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    private void loadOrders() {
+        ordersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                Log.d(TAG, "DataSnapshot exists: " + dataSnapshot.exists());
+                Log.d(TAG, "DataSnapshot children count: " + dataSnapshot.getChildrenCount());
+
+                orderList.clear();
+                if (!dataSnapshot.exists()) {
+                    Log.w(TAG, "No orders found in database");
+                    Toast.makeText(ProfileActivity.this, "No orders found", Toast.LENGTH_SHORT).show();
+                    orderAdapter.notifyDataSetChanged();
+                    return;
+                }
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    try {
+                        Log.d(TAG, "Processing order: " + snapshot.getKey());
+                        Long timestamp = snapshot.child("timestamp").getValue(Long.class);
+                        if (timestamp == null) {
+                            Log.w(TAG, "Timestamp missing for order: " + snapshot.getKey());
+                            continue;
+                        }
+
+                        List<Product> items = new ArrayList<>();
+                        DataSnapshot itemsSnapshot = snapshot.child("items");
+                        for (DataSnapshot itemSnapshot : itemsSnapshot.getChildren()) {
+                            CartItem cartItem = itemSnapshot.getValue(CartItem.class);
+                            if (cartItem != null) {
+                                Product product = new Product();
+                                product.setId(cartItem.getProductId());
+                                product.setName(cartItem.getName());
+                                product.setPrice(cartItem.getPrice());
+                                product.setImageUrl(cartItem.getImageUrl());
+                                items.add(product);
+                            } else {
+                                Log.w(TAG, "Failed to parse cart item: " + itemSnapshot.getKey());
+                            }
+                        }
+
+                        Order order = new Order(snapshot.getKey(), timestamp, items);
+                        orderList.add(order);
+                        Log.d(TAG, "Added order: " + order.getId() + " with " + items.size() + " items");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error parsing order: " + e.getMessage(), e);
+                    }
+                }
+
+                orderAdapter.notifyDataSetChanged();
+                Log.d(TAG, "Total orders loaded: " + orderList.size());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(TAG, "Database error: " + databaseError.getMessage(), databaseError.toException());
+                Toast.makeText(ProfileActivity.this, "Error loading orders: " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void loadUserData() {
-        userRef.addValueEventListener(new ValueEventListener() {
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     String name = dataSnapshot.child("name").getValue(String.class);
-                    String email = dataSnapshot.child("email").getValue(String.class);
                     String phone = dataSnapshot.child("phone").getValue(String.class);
 
-                    if (name != null) tvName.setText(name);
-                    if (email != null) tvEmail.setText(email);
-                    if (phone != null) tvPhone.setText(phone);
+                    if (name != null) {
+                        tvName.setText(name);
+                    } else {
+                        tvName.setText("Не указано");
+                    }
+
+                    if (phone != null) {
+                        tvPhone.setText(phone);
+                    } else {
+                        tvPhone.setText("Не указано");
+                    }
                 } else {
-                    Toast.makeText(ProfileActivity.this, "Данные пользователя не найдены", Toast.LENGTH_SHORT).show();
+                    Log.w(TAG, "User data not found in database");
+                    tvName.setText("Не указано");
+                    tvPhone.setText("Не указано");
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(ProfileActivity.this, "Ошибка при получении данных", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Failed to load user data: " + databaseError.getMessage(), databaseError.toException());
+                Toast.makeText(ProfileActivity.this, "Error loading user data: " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -61,6 +61,11 @@ public class CartActivity extends AppCompatActivity {
         }
 
         btnCheckout.setOnClickListener(v -> {
+            if (cartItems.isEmpty()) {
+                Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             // Показываем всплывающее окно для подтверждения заказа
             AlertDialog.Builder builder = new AlertDialog.Builder(CartActivity.this);
             builder.setTitle("Подтвердить заказ");
@@ -72,17 +77,23 @@ public class CartActivity extends AppCompatActivity {
                 orderData.put("timestamp", System.currentTimeMillis());
                 orderData.put("items", cartItems);
 
+                Log.d(TAG, "Saving order with ID: " + orderId);
+                Log.d(TAG, "Order data: " + orderData.toString());
+
                 ordersRef.child(orderId).setValue(orderData)
                         .addOnSuccessListener(aVoid -> {
+                            Log.d(TAG, "Order saved successfully");
                             // Очищаем корзину в базе данных после успешного сохранения заказа
                             cartRef.removeValue()
                                     .addOnSuccessListener(aVoid2 -> {
+                                        Log.d(TAG, "Cart cleared successfully");
                                         Toast.makeText(this, "Order placed successfully", Toast.LENGTH_SHORT).show();
                                         cartItems.clear();
                                         cartAdapter.notifyDataSetChanged();
                                         finish();
                                     })
                                     .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Failed to clear cart: " + e.getMessage(), e);
                                         AlertDialog.Builder errorBuilder = new AlertDialog.Builder(CartActivity.this);
                                         errorBuilder.setTitle("Ошибка");
                                         errorBuilder.setMessage("Не удалось очистить корзину: " + e.getMessage());
@@ -116,6 +127,7 @@ public class CartActivity extends AppCompatActivity {
                 }
                 cartAdapter.notifyDataSetChanged();
                 tvTotal.setText(String.format("Total: $%.2f", total));
+                Log.d(TAG, "Loaded " + cartItems.size() + " items into cart");
             }
 
             @Override
@@ -137,6 +149,7 @@ public class CartActivity extends AppCompatActivity {
         String cartItemId = cartRef.push().getKey();
         if (cartItemId != null) {
             cartRef.child(cartItemId).setValue(cartItem);
+            Log.d(TAG, "Added product to cart: " + product.getName());
         }
     }
 }

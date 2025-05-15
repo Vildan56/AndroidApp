@@ -4,16 +4,17 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp"
-    android:background="@android:color/white"
+    android:background="@color/gradient_start"
     android:layout_marginBottom="8dp">
 
     <TextView
         android:id="@+id/tv_order_date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Order Date"
+        android:text="Order Datу"
         android:textSize="16sp"
-        android:padding="4dp" />
+        android:padding="4dp"
+        android:textColor="@color/text_primary"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_order_items"
