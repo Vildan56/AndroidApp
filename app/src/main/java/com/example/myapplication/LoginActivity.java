@@ -30,6 +30,7 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.et_password);
         Button btnLogin = findViewById(R.id.btn_login);
         TextView tvSignUp = findViewById(R.id.tv_signup);
+        TextView tvForgotPassword = findViewById(R.id.tv_forgot_password);
 
         btnLogin.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();
@@ -49,7 +50,11 @@ public class LoginActivity extends AppCompatActivity {
                     });
         });
 
-        TextView tvForgotPassword = findViewById(R.id.tv_forgot_password);
+        tvSignUp.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+            startActivity(intent);
+        });
+
         tvForgotPassword.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();
             if (email.isEmpty()) {

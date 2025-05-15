@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,11 +21,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class CartActivity extends AppCompatActivity {
-    private RecyclerView rvCart;
     private TextView tvTotal;
-    private Button btnCheckout;
     private List<CartItem> cartItems;
     private CartAdapter adapter;
     private DatabaseReference cartRef;
@@ -34,16 +34,16 @@ public class CartActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
 
-        rvCart = findViewById(R.id.rv_cart);
+        RecyclerView rvCart = findViewById(R.id.rv_cart);
         tvTotal = findViewById(R.id.tv_total);
-        btnCheckout = findViewById(R.id.btn_checkout);
+        Button btnCheckout = findViewById(R.id.btn_checkout);
 
         cartItems = new ArrayList<>();
         adapter = new CartAdapter(this, cartItems);
         rvCart.setLayoutManager(new LinearLayoutManager(this));
         rvCart.setAdapter(adapter);
 
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         cartRef = FirebaseDatabase.getInstance().getReference("carts").child(userId);
 
         loadCartItems();
@@ -83,7 +83,7 @@ public class CartActivity extends AppCompatActivity {
     private void loadCartItems() {
         cartRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 cartItems.clear();
                 double total = 0.0;
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -99,7 +99,7 @@ public class CartActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
                 // Обработка ошибок
             }
         });

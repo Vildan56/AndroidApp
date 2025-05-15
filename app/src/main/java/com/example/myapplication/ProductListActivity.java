@@ -2,10 +2,15 @@ package com.example.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
+
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -23,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductListActivity extends AppCompatActivity implements ProductAdapter.OnAddToCartClickListener {
+    private static final String TAG = "ProductListActivity";
     private RecyclerView rvProducts;
     private List<Product> productList;
     private List<Product> cartItems;
@@ -34,19 +40,40 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_product_list);
+        try {
+            setContentView(R.layout.activity_product_list);
+        } catch (Exception e) {
+            Log.e(TAG, "Error inflating layout: " + e.getMessage(), e);
+            Toast.makeText(this, "Error loading layout", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
 
         rvProducts = findViewById(R.id.rv_products);
         FloatingActionButton fabCart = findViewById(R.id.fab_cart);
         spinnerCategory = findViewById(R.id.spinner_category);
         searchView = findViewById(R.id.search_view);
 
+        if (rvProducts == null || fabCart == null || spinnerCategory == null || searchView == null) {
+            Log.e(TAG, "One or more views not found in layout");
+            Toast.makeText(this, "Layout error: View not found", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
         cartItems = new ArrayList<>();
         productList = new ArrayList<>();
 
-        adapter = new ProductAdapter(this, productList, this);
-        rvProducts.setLayoutManager(new GridLayoutManager(this, 2));
-        rvProducts.setAdapter(adapter);
+        try {
+            adapter = new ProductAdapter(this, productList, this);
+            rvProducts.setLayoutManager(new GridLayoutManager(this, 2));
+            rvProducts.setAdapter(adapter);
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up adapter: " + e.getMessage(), e);
+            Toast.makeText(this, "Error setting up product list", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
 
         fabCart.setOnClickListener(v -> {
             Intent intent = new Intent(this, CartActivity.class);
@@ -66,19 +93,31 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 productList.clear();
+                if (!dataSnapshot.exists()) {
+                    Log.w(TAG, "No products found in database");
+                    Toast.makeText(ProductListActivity.this, "No products available", Toast.LENGTH_SHORT).show();
+                    adapter.notifyDataSetChanged();
+                    return;
+                }
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Product product = snapshot.getValue(Product.class);
-                    if (product != null) {
-                        product.setId(snapshot.getKey());
-                        productList.add(product);
+                    try {
+                        Product product = snapshot.getValue(Product.class);
+                        if (product != null) {
+                            product.setId(snapshot.getKey());
+                            productList.add(product);
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error parsing product: " + e.getMessage(), e);
                     }
                 }
                 adapter.notifyDataSetChanged();
+                Log.d(TAG, "Loaded " + productList.size() + " products");
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                // Handle errors
+                Log.e(TAG, "Database error: " + databaseError.getMessage(), databaseError.toException());
+                Toast.makeText(ProductListActivity.this, "Error loading products: " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -136,5 +175,4 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
     public void onAddToCartClick(Product product) {
         cartItems.add(product);
     }
-
 }
