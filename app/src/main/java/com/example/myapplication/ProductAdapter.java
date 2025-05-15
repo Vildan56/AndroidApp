@@ -6,16 +6,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
+public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> implements Filterable {
     private List<Product> productList;
     private List<Product> productListFiltered;
     private Context context;
@@ -38,6 +41,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         notifyDataSetChanged();
     }
 
+    @Override
     public Filter getFilter() {
         return new Filter() {
             @Override
@@ -57,14 +61,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 results.values = filteredList;
                 return results;
             }
+
             @Override
+            @SuppressWarnings("unchecked")
             protected void publishResults(CharSequence constraint, FilterResults results) {
+                // Safely cast the results.values to List<Product>
+                List<Product> filtered = (List<Product>) results.values;
                 productList.clear();
-                productList.addAll((List<Product>) results.values);
+                productList.addAll(filtered);
                 notifyDataSetChanged();
             }
         };
     }
+
     @NonNull
     @Override
     public ProductViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

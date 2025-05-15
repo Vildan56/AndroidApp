@@ -1,20 +1,22 @@
 package com.example.myapplication;
 
-import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -24,7 +26,6 @@ public class SignUpActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_signup);
 
         mAuth = FirebaseAuth.getInstance();
@@ -45,10 +46,27 @@ public class SignUpActivity extends AppCompatActivity {
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            startActivity(new Intent(this, ProductListActivity.class));
-                            finish();
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user != null) {
+                                String userId = user.getUid();
+                                Map<String, Object> userData = new HashMap<>();
+                                userData.put("email", email);
+                                userData.put("name", "Default Name");
+                                userData.put("phone", "");
+                                userData.put("createdAt", ServerValue.TIMESTAMP);
+
+                                DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(userId);
+                                userRef.setValue(userData)
+                                        .addOnSuccessListener(aVoid -> {
+                                            startActivity(new Intent(this, ProductListActivity.class));
+                                            finish();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(this, "Failed to save user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        });
+                            }
                         } else {
-                            Toast.makeText(this, "Sign Up failed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Sign Up failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
         });

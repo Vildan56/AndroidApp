@@ -1,44 +1,24 @@
 package com.example.myapplication;
-
-import android.os.Parcel;
-import android.os.Parcelable;
-
-public class CartItem implements Parcelable {
-    private Product product;
+public class CartItem {
+    private String cartItemId;
+    private String productId;
     private int quantity;
+    private String name;
+    private double price;
+    private String imageUrl;
 
-    public CartItem(Product product, int quantity) {
-        this.product = product;
-        this.quantity = quantity;
-    }
+    public CartItem() {}
 
-    protected CartItem(Parcel in) {
-        product = in.readParcelable(Product.class.getClassLoader());
-        quantity = in.readInt();
-    }
-
-    public static final Creator<CartItem> CREATOR = new Creator<CartItem>() {
-        @Override
-        public CartItem createFromParcel(Parcel in) {
-            return new CartItem(in);
-        }
-
-        @Override
-        public CartItem[] newArray(int size) {
-            return new CartItem[size];
-        }
-    };
-
-    public Product getProduct() { return product; }
+    public String getCartItemId() { return cartItemId; }
+    public void setCartItemId(String cartItemId) { this.cartItemId = cartItemId; }
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
-
-    @Override
-    public int describeContents() { return 0; }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeParcelable(product, flags);
-        dest.writeInt(quantity);
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

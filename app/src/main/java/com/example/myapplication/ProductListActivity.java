@@ -15,6 +15,11 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +28,9 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
     private RecyclerView rvProducts;
     private List<Product> productList;
     private List<Product> cartItems;
-    private ProductAdapter adapter; // Объявляем adapter как поле класса
+    private ProductAdapter adapter;
     private Spinner spinnerCategory;
+    private DatabaseReference productsRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +43,6 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
 
         cartItems = new ArrayList<>();
         productList = new ArrayList<>();
-        productList.add(new Product("Camera Lens", 50.00, "https://via.placeholder.com/150", "Accessories"));
-        productList.add(new Product("Photo Frame", 10.00, "https://via.placeholder.com/150", "Frames"));
 
         adapter = new ProductAdapter(this, productList, this);
         rvProducts.setLayoutManager(new GridLayoutManager(this, 2));
@@ -50,7 +54,32 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
             startActivity(intent);
         });
 
-        setupCategorySpinner(); // Настраиваем Spinner в отдельном методе
+        productsRef = FirebaseDatabase.getInstance().getReference("products");
+        loadProducts();
+
+        setupCategorySpinner();
+    }
+
+    private void loadProducts() {
+        productsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                productList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Product product = snapshot.getValue(Product.class);
+                    if (product != null) {
+                        product.setId(snapshot.getKey());
+                        productList.add(product);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Handle errors
+            }
+        });
     }
 
     private void setupCategorySpinner() {
@@ -75,7 +104,7 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
     private void filterProductsByCategory(String category) {
         List<Product> filteredList = new ArrayList<>();
         if (category.equals("All")) {
-            filteredList.addAll(productList); // Используем productList вместо productListFull
+            filteredList.addAll(productList);
         } else {
             for (Product product : productList) {
                 if (product.getCategory().equals(category)) {
@@ -89,6 +118,7 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
     @Override
     public void onAddToCartClick(Product product) {
         cartItems.add(product);
+        // Сохранение в Realtime Database будет в CartActivity
     }
 
     @Override
