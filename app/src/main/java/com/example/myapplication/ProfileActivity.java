@@ -132,10 +132,11 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadOrders() {
+
         ordersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
+                String email = dataSnapshot.child("email").getValue(String.class);
                 Log.d(TAG, "DataSnapshot exists: " + dataSnapshot.exists());
                 Log.d(TAG, "DataSnapshot children count: " + dataSnapshot.getChildrenCount());
 
@@ -190,6 +191,7 @@ public class ProfileActivity extends AppCompatActivity {
                 Toast.makeText(ProfileActivity.this, "Error loading orders: " + databaseError.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+
     }
 
     private void loadUserData() {
@@ -198,6 +200,7 @@ public class ProfileActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     String name = dataSnapshot.child("name").getValue(String.class);
+                    String email = dataSnapshot.child("email").getValue(String.class);
                     String phone = dataSnapshot.child("phone").getValue(String.class);
 
                     if (name != null) {
@@ -205,6 +208,8 @@ public class ProfileActivity extends AppCompatActivity {
                     } else {
                         tvName.setText("Не указано");
                     }
+
+                    if (email != null) tvEmail.setText(email);
 
                     if (phone != null) {
                         tvPhone.setText(phone);
