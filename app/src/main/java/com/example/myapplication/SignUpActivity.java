@@ -6,6 +6,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Patterns;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,7 +22,7 @@ import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
 
-    private EditText etEmail, etPassword;
+    private EditText etEmail, etPassword, etConfirmPassword;
     private FirebaseAuth mAuth;
 
     @Override
@@ -31,6 +33,7 @@ public class SignUpActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         etEmail = findViewById(R.id.et_email);
         etPassword = findViewById(R.id.et_password);
+        etConfirmPassword = findViewById(R.id.et_confirm_password);
         Button btnSignUp = findViewById(R.id.btn_login);
         btnSignUp.setText("Sign Up");
         TextView tvSignUp = findViewById(R.id.tv_signup);
@@ -39,8 +42,30 @@ public class SignUpActivity extends AppCompatActivity {
         btnSignUp.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
-            if (email.isEmpty() || password.isEmpty()) {
+            String confirmPassword = etConfirmPassword.getText().toString().trim();
+
+            if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(this, "Invalid email format", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (password.length() < 8) {
+                Toast.makeText(this, "Password must be at least 8 characters", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (!password.matches(".*\\d.*")) {
+                Toast.makeText(this, "Password must contain at least one digit", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (!password.matches(".*[!@#$%^&*()_+=\\-{}|:;\"'<>,.?/].*")) {
+                Toast.makeText(this, "Password must contain at least one special character", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (!password.equals(confirmPassword)) {
+                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
                 return;
             }
             mAuth.createUserWithEmailAndPassword(email, password)
