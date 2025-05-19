@@ -82,6 +82,13 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
+        if (tvEmail == null) {
+            Log.e(TAG, "TextView tv_email not found in layout");
+            Toast.makeText(this, "Error: Email view not found", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
         orderList = new ArrayList<>();
         orderAdapter = new OrderAdapter(this, orderList);
         rvOrders.setLayoutManager(new LinearLayoutManager(this));
@@ -109,8 +116,28 @@ public class ProfileActivity extends AppCompatActivity {
             etPhone.setText(tvPhone.getText());
 
             builder.setPositiveButton("Сохранить", (dialog, which) -> {
-                String newName = etName.getText().toString();
-                String newPhone = etPhone.getText().toString();
+                String newName = etName.getText().toString().trim();
+                String newPhone = etPhone.getText().toString().trim();
+
+                // Валидация имени
+                if (newName.isEmpty()) {
+                    Toast.makeText(ProfileActivity.this, "Имя не может быть пустым", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (!newName.matches("^(?=.*[а-яА-Яa-zA-Z])[а-яА-Яa-zA-Z\\-\\s]{2,50}$")) {
+                    Toast.makeText(ProfileActivity.this, "Имя должно содержать хотя бы одну букву и состоять из букв, пробелов или дефисов (2-50 символов)", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Валидация телефона
+                if (newPhone.isEmpty()) {
+                    Toast.makeText(ProfileActivity.this, "Телефон не может быть пустым", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (!newPhone.matches("^\\+?\\d{10,15}$")) {
+                    Toast.makeText(ProfileActivity.this, "Телефон должен содержать только цифры (допускается + в начале), длина 10-15 символов", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 Map<String, Object> updates = new HashMap<>();
                 updates.put("name", newName);
@@ -209,7 +236,11 @@ public class ProfileActivity extends AppCompatActivity {
                         tvName.setText("Не указано");
                     }
 
-                    if (email != null) tvEmail.setText(email);
+                    if (email != null) {
+                        tvEmail.setText(email);
+                    } else {
+                        tvEmail.setText("Не указано");
+                    }
 
                     if (phone != null) {
                         tvPhone.setText(phone);
