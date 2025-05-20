@@ -13,6 +13,8 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+
+
 @RunWith(MockitoJUnitRunner.class)
 public class ProductAdapterTest {
 
@@ -51,8 +53,19 @@ public class ProductAdapterTest {
 
     @Test
     public void testFilter() {
-        adapter.getFilter().filter("Product 1");
-        assertEquals(1, adapter.getItemCount());
+        // Test the standalone filtering logic directly
+        List<Product> filteredResults = ProductAdapter.performFilteringLogic(productList, "Product 1");
+        assertNotNull(filteredResults);
+        assertEquals(1, filteredResults.size());
+        assertEquals("Test Product 1", filteredResults.get(0).getName());
+
+        List<Product> allResults = ProductAdapter.performFilteringLogic(productList, "");
+        assertNotNull(allResults);
+        assertEquals(2, allResults.size());
+
+        List<Product> noResults = ProductAdapter.performFilteringLogic(productList, "NonExistent");
+        assertNotNull(noResults);
+        assertEquals(0, noResults.size());
     }
 
     @Test
@@ -63,19 +76,22 @@ public class ProductAdapterTest {
         product.setName("New Product");
         newList.add(product);
         
-        adapter.setFilteredList(newList);
-        assertEquals(1, adapter.getItemCount());
+        adapter.updateFilteredListData(newList);
+        assertEquals(1, adapter.getFilteredList().size());
+        assertEquals("New Product", adapter.getFilteredList().get(0).getName());
     }
 
     @Test
     public void testEmptyList() {
-        adapter.setFilteredList(new ArrayList<>());
-        assertEquals(0, adapter.getItemCount());
+        adapter.updateFilteredListData(new ArrayList<>());
+        assertNotNull(adapter.getFilteredList());
+        assertEquals(0, adapter.getFilteredList().size());
     }
 
     @Test
     public void testNullList() {
-        adapter.setFilteredList(null);
-        assertEquals(0, adapter.getItemCount());
+        adapter.updateFilteredListData(null);
+        assertNotNull(adapter.getFilteredList());
+        assertEquals(0, adapter.getFilteredList().size());
     }
 } 

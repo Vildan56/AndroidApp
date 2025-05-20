@@ -62,8 +62,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         return filteredList != null ? filteredList.size() : 0;
     }
 
+    // Getter for testing purposes
+    public List<Product> getFilteredList() {
+        return filteredList;
+    }
+
+    // New method to update data without notifying, for testing or controlled updates
+    public void updateFilteredListData(List<Product> newFilteredList) {
+        this.filteredList = newFilteredList != null ? newFilteredList : new ArrayList<>();
+    }
+
     public void setFilteredList(List<Product> filteredList) {
-        this.filteredList = filteredList != null ? filteredList : new ArrayList<>();
+        updateFilteredListData(filteredList); // Use the new method to update data
         notifyDataSetChanged();
     }
 
@@ -72,17 +82,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         return new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
-                List<Product> filteredResults = new ArrayList<>();
-                if (constraint == null || constraint.length() == 0) {
-                    filteredResults.addAll(productList);
-                } else {
-                    String filterPattern = constraint.toString().toLowerCase().trim();
-                    for (Product product : productList) {
-                        if (product.getName().toLowerCase().contains(filterPattern)) {
-                            filteredResults.add(product);
-                        }
-                    }
-                }
+                List<Product> filteredResults = performFilteringLogic(productList, constraint);
                 FilterResults results = new FilterResults();
                 results.values = filteredResults;
                 return results;
@@ -94,6 +94,22 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 notifyDataSetChanged();
             }
         };
+    }
+
+    // Helper method for testing the core filtering logic
+    public static List<Product> performFilteringLogic(List<Product> productList, CharSequence constraint) {
+        List<Product> filteredResults = new ArrayList<>();
+        if (constraint == null || constraint.length() == 0) {
+            filteredResults.addAll(productList);
+        } else {
+            String filterPattern = constraint.toString().toLowerCase().trim();
+            for (Product product : productList) {
+                if (product.getName() != null && product.getName().toLowerCase().contains(filterPattern)) {
+                    filteredResults.add(product);
+                }
+            }
+        }
+        return filteredResults;
     }
 
     public interface OnAddToCartClickListener {
