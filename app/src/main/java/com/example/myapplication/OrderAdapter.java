@@ -45,11 +45,11 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             cartItem.setName(product.getName());
             cartItem.setPrice(product.getPrice());
             cartItem.setImageUrl(product.getImageUrl());
-            cartItem.setQuantity(1); // Предполагаем, что в заказе количество 1
+            cartItem.setQuantity(1);
             cartItems.add(cartItem);
         }
 
-        CartAdapter itemsAdapter = new CartAdapter(context, cartItems);
+        OrderProductAdapter itemsAdapter = new OrderProductAdapter(context, cartItems);
         holder.rvOrderItems.setLayoutManager(new LinearLayoutManager(context));
         holder.rvOrderItems.setAdapter(itemsAdapter);
     }

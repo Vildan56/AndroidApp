@@ -43,6 +43,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.tvName.setText(product.getName());
         holder.tvPrice.setText(String.format("$%.2f", product.getPrice()));
         holder.btnAddToCart.setOnClickListener(v -> listener.onAddToCartClick(product));
+
+        // Загрузка изображения с помощью Glide
+        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+            Glide.with(context)
+                .load(product.getImageUrl())
+                .centerCrop()
+                .placeholder(R.drawable.placeholder_image)
+                .error(R.drawable.error_image)
+                .into(holder.ivProduct);
+        } else {
+            holder.ivProduct.setImageResource(R.drawable.placeholder_image);
+        }
     }
 
     @Override
@@ -91,12 +103,14 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     public static class ProductViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvPrice;
         Button btnAddToCart;
+        ImageView ivProduct;
 
         public ProductViewHolder(View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_name);
             tvPrice = itemView.findViewById(R.id.tv_price);
             btnAddToCart = itemView.findViewById(R.id.btn_add_to_cart);
+            ivProduct = itemView.findViewById(R.id.iv_product);
         }
     }
 }

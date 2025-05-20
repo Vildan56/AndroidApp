@@ -176,6 +176,21 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
 
     @Override
     public void onAddToCartClick(Product product) {
-        cartItems.add(product);
+        // Проверяем, есть ли уже такой продукт в корзине
+        boolean productExists = false;
+        for (Product existingProduct : cartItems) {
+            if (existingProduct.getId().equals(product.getId())) {
+                productExists = true;
+                break;
+            }
+        }
+
+        // Добавляем продукт только если его еще нет в корзине
+        if (!productExists) {
+            cartItems.add(product);
+            Toast.makeText(this, "Product added to cart", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Product is already in cart", Toast.LENGTH_SHORT).show();
+        }
     }
 }

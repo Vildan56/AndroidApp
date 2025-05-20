@@ -17,6 +17,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -68,8 +70,8 @@ public class CartActivity extends AppCompatActivity {
 
             // Показываем всплывающее окно для подтверждения заказа
             AlertDialog.Builder builder = new AlertDialog.Builder(CartActivity.this);
-            builder.setTitle("Подтвердить заказ");
-            builder.setMessage("Ваш заказ успешно оформлен!");
+            builder.setTitle("Confirm the order");
+            builder.setMessage("Your order has been successfully placed!");
             builder.setPositiveButton("OK", (dialog, which) -> {
                 // Сохраняем заказ в Firebase
                 String orderId = ordersRef.push().getKey();
@@ -95,8 +97,8 @@ public class CartActivity extends AppCompatActivity {
                                     .addOnFailureListener(e -> {
                                         Log.e(TAG, "Failed to clear cart: " + e.getMessage(), e);
                                         AlertDialog.Builder errorBuilder = new AlertDialog.Builder(CartActivity.this);
-                                        errorBuilder.setTitle("Ошибка");
-                                        errorBuilder.setMessage("Не удалось очистить корзину: " + e.getMessage());
+                                        errorBuilder.setTitle("Mistake");
+                                        errorBuilder.setMessage("Couldn't empty the trash: " + e.getMessage());
                                         errorBuilder.setPositiveButton("OK", null);
                                         errorBuilder.show();
                                     });
@@ -106,7 +108,7 @@ public class CartActivity extends AppCompatActivity {
                             Toast.makeText(this, "Failed to place order: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         });
             });
-            builder.setNegativeButton("Отмена", null);
+            builder.setNegativeButton("Cancel", null);
             builder.show();
         });
     }
@@ -139,17 +141,56 @@ public class CartActivity extends AppCompatActivity {
     }
 
     private void addToCart(Product product) {
-        Map<String, Object> cartItem = new HashMap<>();
-        cartItem.put("productId", product.getId());
-        cartItem.put("quantity", 1);
-        cartItem.put("name", product.getName());
-        cartItem.put("price", product.getPrice());
-        cartItem.put("imageUrl", product.getImageUrl());
+        // Проверяем, есть ли уже такой продукт в корзине
+        cartRef.orderByChild("productId").equalTo(product.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // Продукт уже есть в корзине, увеличиваем количество
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        CartItem existingItem = snapshot.getValue(CartItem.class);
+                        if (existingItem != null) {
+                            existingItem.setQuantity(existingItem.getQuantity() + 1);
+                            cartRef.child(snapshot.getKey()).setValue(existingItem)
+                                .addOnSuccessListener(aVoid -> {
+                                    Log.d(TAG, "Incremented quantity for product: " + product.getName());
+                                    Toast.makeText(CartActivity.this, "Product quantity updated", Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error updating quantity: " + e.getMessage());
+                                    Toast.makeText(CartActivity.this, "Error updating quantity", Toast.LENGTH_SHORT).show();
+                                });
+                        }
+                    }
+                } else {
+                    // Продукта нет в корзине, добавляем новый
+                    Map<String, Object> cartItem = new HashMap<>();
+                    cartItem.put("productId", product.getId());
+                    cartItem.put("quantity", 1);
+                    cartItem.put("name", product.getName());
+                    cartItem.put("price", product.getPrice());
+                    cartItem.put("imageUrl", product.getImageUrl());
 
-        String cartItemId = cartRef.push().getKey();
-        if (cartItemId != null) {
-            cartRef.child(cartItemId).setValue(cartItem);
-            Log.d(TAG, "Added product to cart: " + product.getName());
-        }
+                    String cartItemId = cartRef.push().getKey();
+                    if (cartItemId != null) {
+                        cartRef.child(cartItemId).setValue(cartItem)
+                            .addOnSuccessListener(aVoid -> {
+                                Log.d(TAG, "Added new product to cart: " + product.getName());
+                                Toast.makeText(CartActivity.this, "Product added to cart", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e(TAG, "Error adding product: " + e.getMessage());
+                                Toast.makeText(CartActivity.this, "Error adding product", Toast.LENGTH_SHORT).show();
+                            });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e(TAG, "Error checking cart: " + databaseError.getMessage(), databaseError.toException());
+                Toast.makeText(CartActivity.this, "Error checking cart: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

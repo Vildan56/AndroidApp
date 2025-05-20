@@ -106,7 +106,7 @@ public class ProfileActivity extends AppCompatActivity {
         Button btnEditProfile = findViewById(R.id.btn_edit_profile);
         btnEditProfile.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Редактировать профиль");
+            builder.setTitle("Edit profile");
             View view = getLayoutInflater().inflate(R.layout.dialog_edit_profile, null);
             builder.setView(view);
 
@@ -115,27 +115,27 @@ public class ProfileActivity extends AppCompatActivity {
             etName.setText(tvName.getText());
             etPhone.setText(tvPhone.getText());
 
-            builder.setPositiveButton("Сохранить", (dialog, which) -> {
+            builder.setPositiveButton("Save", (dialog, which) -> {
                 String newName = etName.getText().toString().trim();
                 String newPhone = etPhone.getText().toString().trim();
 
-                // Валидация имени
+                // Name validation
                 if (newName.isEmpty()) {
-                    Toast.makeText(ProfileActivity.this, "Имя не может быть пустым", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProfileActivity.this, "Name cannot be empty", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if (!newName.matches("^(?=.*[а-яА-Яa-zA-Z])[а-яА-Яa-zA-Z\\-\\s]{2,50}$")) {
-                    Toast.makeText(ProfileActivity.this, "Имя должно содержать хотя бы одну букву и состоять из букв, пробелов или дефисов (2-50 символов)", Toast.LENGTH_SHORT).show();
+                if (!newName.matches("^(?=.*[a-zA-Zа-яА-Я])[a-zA-Zа-яА-Я\\-\\s]{2,50}$")) {
+                    Toast.makeText(ProfileActivity.this, "Name must contain at least one letter and consist of letters, spaces or hyphens (2-50 characters)", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // Валидация телефона
+                // Phone validation
                 if (newPhone.isEmpty()) {
-                    Toast.makeText(ProfileActivity.this, "Телефон не может быть пустым", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProfileActivity.this, "Phone cannot be empty", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if (!newPhone.matches("^\\+?\\d{10,15}$")) {
-                    Toast.makeText(ProfileActivity.this, "Телефон должен содержать только цифры (допускается + в начале), длина 10-15 символов", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProfileActivity.this, "The phone should contain only numbers (+ is allowed at the beginning), 10-15 characters long.", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -146,14 +146,14 @@ public class ProfileActivity extends AppCompatActivity {
                         .addOnSuccessListener(aVoid -> {
                             tvName.setText(newName);
                             tvPhone.setText(newPhone);
-                            Toast.makeText(ProfileActivity.this, "Профиль обновлён", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ProfileActivity.this, "The profile has been updated", Toast.LENGTH_SHORT).show();
                         })
                         .addOnFailureListener(e -> {
-                            Toast.makeText(ProfileActivity.this, "Ошибка обновления профиля", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ProfileActivity.this, "Profile update error", Toast.LENGTH_SHORT).show();
                         });
             });
 
-            builder.setNegativeButton("Отмена", null);
+            builder.setNegativeButton("Cancel", null);
             builder.show();
         });
     }
@@ -233,24 +233,24 @@ public class ProfileActivity extends AppCompatActivity {
                     if (name != null) {
                         tvName.setText(name);
                     } else {
-                        tvName.setText("Не указано");
+                        tvName.setText("Not specified");
                     }
 
                     if (email != null) {
                         tvEmail.setText(email);
                     } else {
-                        tvEmail.setText("Не указано");
+                        tvEmail.setText("Not specified");
                     }
 
                     if (phone != null) {
                         tvPhone.setText(phone);
                     } else {
-                        tvPhone.setText("Не указано");
+                        tvPhone.setText("Not specified");
                     }
                 } else {
                     Log.w(TAG, "User data not found in database");
-                    tvName.setText("Не указано");
-                    tvPhone.setText("Не указано");
+                    tvName.setText("Not specified");
+                    tvPhone.setText("Not specified");
                 }
             }
 
